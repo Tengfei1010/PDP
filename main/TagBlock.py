@@ -1,41 +1,83 @@
 # -*- coding: utf-8 -*- 
-'''
+"""
 Created on 2014年9月29日
-
 @author: tutengfei
-'''
+"""
+import time
 import rsa
+import base64
 
-_blocksize = 2048
-def tagBlock(pk,sk,inputfile):
-    
-    (N, g) = pk
-    (e, d, v) = sk
-    count = 0
-    with open(inputfile,'rb') as infile:
+_blocksize = 512
+
+
+# noinspection PyNoneFunctionAssignment
+def tag_block(pk, sk, inputfile):
+    """
+
+    :param pk:
+    :param sk:
+    :param inputfile:
+    :return:
+    """
+    output = open('../file/output.txt', 'wb')
+    n, g = pk
+    e, d, v = sk
+    with open(inputfile, 'rb') as infile:
+        i = 1
         for block in rsa.varblock.yield_fixedblocks(infile, _blocksize):
-            w = str((bin(v)[2:])) + str((bin(count)[2:]))
-            count = count + 1
-            # h function is for h(w)-> QRn
-            h_w = int(w, 2)
-            _result = gen_binary(block)
-            print _result 
-            
-            
-            
-def gen_binary(string):
-    with open ('../file/output.txt','wb') as output:
-        for i in string:
-            temp = (bin(ord(i))[2:])
-            temp = '0' * (8-len(temp)) + temp
-            output.write(temp)
-            
+            _result = str2num(_blocksize, block)
+            w = gen_w(v, i)
+            result = pow(g, (w + _result[0]), n)
+            # print(result)
+            # output.writelines((str(w) + ":" + str(result) + '\n'))
+            i += 1
+
+    output.close()
+
+
+def gen_w(v, i):
+    v_binary = bin(v)[2:]
+    i_binary = bin(i)[2:]
+    return int(v_binary + i_binary, 2)
+
+
+def str2num(nbits, message):
+    """
+    字符转换成数字
+    :param nbits:
+    :param message:
+    :return:
+    """
+    if nbits % 2 == 0:
+        nbits -= 2
+    else:
+        nbits -= 1
+
+    message_b64 = base64.b64encode(message)
+    message_number = []
+
+    for char in message_b64:
+        message_number.append(str(ord(char)-30))
+        message_str = ''.join(message_number)
+
+    result = []
+    while True:
+        if len(message_str) > nbits:
+            result.append(long(message_str[:nbits]))
+            message_str = message_str[nbits:]
+        else:
+            result.append(long(message_str))
+            return result
+
+
+def main():
+    pass
     
-if __name__ =="__main__":
+if __name__ == "__main__":
+
     import KeyGen
-    (pk,sk) = KeyGen.KeyGen()
-    tagBlock(pk, sk, '../file/test.txt')
-    
-    
-    
-    
+    start = time.time()
+    pk, sk = KeyGen.keygen()
+    tag_block(pk, sk, '../file/test.txt')
+    end = time.time()
+    print("process cost %s" % (end - start))
