@@ -32,9 +32,12 @@ class prpcrypt():
         return plain_text.rstrip('\0')
 
 if __name__ == '__main__':
+    """
     pc = prpcrypt('keyskeyskeyskeys')
     import sys
     e = pc.encrypt(sys.argv[1])
     d = pc.decrypt(e)
     print "encrypt:", e
     print "decrypt:", d
+    """
+    print (b2a_hex(Random.new().read(AES.block_size)))

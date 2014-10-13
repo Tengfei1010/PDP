@@ -25,12 +25,12 @@ def extended_Euclid(e, z):
         if y3 == 1:
             return y2
         div = x3 / y3
-        (t1, t2, t3) = (x1 -div*y1, x2 - div*y2, x3 - div*y3)
+        (t1, t2, t3) = (x1 - div*y1, x2 - div*y2, x3 - div*y3)
         (x1, x2, x3) = (y1, y2, y3)
         (y1, y2, y3) = (t1, t2, t3)
 
 if __name__ == '__main__':
-    print gcd(7,261)
+    print gcd(7, 261)
     print extended_Euclid(7, 216)
 
 #求大数的模n的乘法逆元，用的方法是扩展的欧几里得算法。

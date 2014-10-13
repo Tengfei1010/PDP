@@ -3,9 +3,13 @@
 Created on 2014年9月29日
 @author: tutengfei
 """
+from binascii import b2a_hex
 import time
 import rsa
 import base64
+from Crypto import Random
+from Crypto.Cipher import AES
+
 
 _blocksize = 512
 
@@ -26,7 +30,7 @@ def tag_block(pk, sk, inputfile):
         i = 1
         for block in rsa.varblock.yield_fixedblocks(infile, _blocksize):
             _result = str2num(_blocksize, block)
-            w = gen_w(v, i)
+            w = gen_w(_result)
             result = pow(g, (w + _result[0]), n)
             # print(result)
             # output.writelines((str(w) + ":" + str(result) + '\n'))
@@ -35,11 +39,24 @@ def tag_block(pk, sk, inputfile):
     output.close()
 
 
-def gen_w(v, i):
+def gen_w(m):
+    """
     v_binary = bin(v)[2:]
     i_binary = bin(i)[2:]
     return int(v_binary + i_binary, 2)
+    """
+    _gen_w()
 
+
+def _gen_w(m):
+    """
+    :param m: can be an integer
+    :return:
+    """
+    iv = b2a_hex(Random.new().read(AES.block_size))
+    m += str2num(_blocksize, iv)
+    temp = bin(m)[:32]
+    return int(temp, 2)
 
 def str2num(nbits, message):
     """
@@ -75,9 +92,9 @@ def main():
     
 if __name__ == "__main__":
 
-    import KeyGen
+    import keygen
     start = time.time()
-    pk, sk = KeyGen.keygen()
+    pk, sk = keygen.keygen()
     tag_block(pk, sk, '../file/test.txt')
     end = time.time()
     print("process cost %s" % (end - start))
